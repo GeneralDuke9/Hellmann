@@ -74,6 +74,7 @@ def prompt_update() -> List[Update]:
     print("End with Ctrl+D")
     for line in stdin:
         (name, value) = line.split(",")
+        # Todo: verify input
         update.append(Update(name, int(10 * float(value))))
 
     return update
@@ -106,7 +107,7 @@ def get_board_update(ranking: Ranking):
                         rank = f" [color=green]({station.rank})[/color]"
                     else:
                         rank = f" [color=green]({station.rank} )[/color]"
-                if rank_change < 0:
+                elif rank_change < 0:
                     if station.rank != 8:
                         rank = f" [color=red]({station.rank})[/color]"
                     else:
