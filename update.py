@@ -1,5 +1,8 @@
+from itertools import islice
 from sys import exit, stdin
 from typing import List
+
+from get_knmi import get_data, stations_mapping
 
 
 class Update:
@@ -68,6 +71,32 @@ def read_stations() -> Ranking:
     return ranks
 
 
+def get_new_values() -> List[Update]:
+    method = get_input_method()
+    if method == 1:
+        new_values = prompt_update()
+    elif method == 2:
+        new_values = knmi_update()
+    else:
+        print("Unknown entry, exit")
+        exit(1)
+    if new_values == []:
+        print("No update received, exit")
+        exit(1)
+    return new_values
+
+
+def get_input_method() -> int:
+    print("Input 1 for manual input, input 2 for KNMI input:")
+    input_method = input()
+    try:
+        method = int(input_method)
+    except TypeError:
+        print("Unknown entry, exit")
+        exit(1)
+    return method
+
+
 def prompt_update() -> List[Update]:
     update: List[Update] = []
     print("Enter update as name,value")
@@ -76,6 +105,24 @@ def prompt_update() -> List[Update]:
         (name, value) = line.split(",")
         # Todo: verify input
         update.append(Update(name, int(10 * float(value))))
+
+    return update
+
+
+def knmi_update() -> List[Update]:
+    update: List[Update] = []
+    print("Provide date (yyyymmdd)")
+    date = input()
+    year = str(date[:4])
+    month = str(date[4:6])
+    day = str(date[6:])
+    raw_update = get_data(year, month, day)
+    for line in islice(raw_update, 45, None):
+        station_no, _, value = line.decode().split(",")
+        station = int(station_no)
+        increment = int(value)
+        if increment < 0:
+            update.append(Update(stations_mapping[str(station)], int(-increment)))
 
     return update
 
@@ -120,10 +167,7 @@ def main():
     new_values: List[Update]
 
     ranking = read_stations()
-    new_values = prompt_update()
-    if new_values == []:
-        print("No update received, exit")
-        exit(1)
+    new_values = get_new_values()
     ranking.update_values(new_values)
     ranking.update_ranks()
     write_file(ranking)
