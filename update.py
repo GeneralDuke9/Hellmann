@@ -124,7 +124,16 @@ def knmi_update() -> List[Update]:
         if increment < 0:
             update.append(Update(stations_mapping[str(station)], int(-increment)))
 
+    show_update(update)
+
     return update
+
+
+def show_update(update: List[Update]):
+    print("\nUpdate:")
+    for entry in update:
+        valuecomma = str(float(entry.value) / 10.0).replace(".", ",")
+        print(f"{entry.station}: {valuecomma}")
 
 
 def write_file(ranking: Ranking):
@@ -134,6 +143,7 @@ def write_file(ranking: Ranking):
 
 
 def get_board_update(ranking: Ranking):
+    print("\nBoard update:")
     with open("board_update.txt", "w") as datafile:
         for station in ranking.stations:
             orange = ""
@@ -159,7 +169,9 @@ def get_board_update(ranking: Ranking):
                         rank = f" [color=red]({station.rank})[/color]"
                     else:
                         rank = f" [color=red]({station.rank} )[/color]"
-            datafile.write(f"{orange}{station.new_rank}. {station.name} {score}{gain}{rank}{orange_end}\n")
+            board_line = f"{orange}{station.new_rank}. {station.name} {score}{gain}{rank}{orange_end}"
+            print(board_line)
+            datafile.write(f"{board_line}\n")
 
 
 def main():
