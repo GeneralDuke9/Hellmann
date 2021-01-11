@@ -1,4 +1,7 @@
-1,Hupsel,2
-1,Twente,2
-3,Arcen,1
-3,Eelde,1
+1,Hupsel,14
+2,Ell,8
+3,Volkel,7
+4,Deelen,3
+5,Twente,2
+6,Arcen,1
+6,Eelde,1
