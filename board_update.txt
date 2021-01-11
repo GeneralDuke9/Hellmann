@@ -1,2 +1,4 @@
-[color=orange]1. Arcen 0,1[/color]
-[color=orange]1. Eelde 0,1[/color]
+[color=orange]1. Hupsel 0,2[/color]
+[color=orange]1. Twente 0,2[/color]
+3. Arcen 0,1 [color=red](1)[/color]
+3. Eelde 0,1 [color=red](1)[/color]
