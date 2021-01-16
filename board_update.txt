@@ -1,16 +1,16 @@
 1. Ell 2,4
-2. Hupsel 1,5 [color=grey][i]+0,1[/i][/color]
-3. Eindhoven 1,4 [color=red](2)[/color]
+2. Hupsel 1,5
+3. Eindhoven 1,4
 4. Deelen 1,2
 5. Herwijnen 0,8
-6. Eelde 0,7 [color=grey][i]+0,6[/i][/color] [color=green](13)[/color]
-6. Twente 0,7 [color=grey][i]+0,5[/i][/color] [color=green](11)[/color]
+6. Eelde 0,7
+6. Twente 0,7
 6. Volkel 0,7
-9. De Bilt 0,6 [color=red](7)[/color]
-10. Arcen 0,5 [color=red](8 )[/color]
-11. Cabauw 0,4 [color=red](9)[/color]
-12. Woensdrecht 0,3 [color=red](10)[/color]
-13. Gilze-Rijen 0,2 [color=red](11)[/color]
-[color=orange]13. Hoogeveen 0,2[/color]
-[color=orange]15. Heino 0,1[/color]
-15. Maastricht 0,1 [color=red](13)[/color]
+9. De Bilt 0,6
+10. Arcen 0,5
+11. Cabauw 0,4
+12. Maastricht 0,3 [color=grey][i]+0,2[/i][/color] [color=green](15)[/color]
+12. Woensdrecht 0,3
+14. Gilze-Rijen 0,2 [color=red](13)[/color]
+14. Hoogeveen 0,2 [color=red](13)[/color]
+16. Heino 0,1 [color=red](15)[/color]

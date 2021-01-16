@@ -9,8 +9,8 @@
 9,De Bilt,6
 10,Arcen,5
 11,Cabauw,4
+12,Maastricht,3
 12,Woensdrecht,3
-13,Gilze-Rijen,2
-13,Hoogeveen,2
-15,Heino,1
-15,Maastricht,1
+14,Gilze-Rijen,2
+14,Hoogeveen,2
+16,Heino,1
