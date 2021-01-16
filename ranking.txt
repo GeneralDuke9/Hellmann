@@ -1,14 +1,16 @@
 1,Ell,24
-2,Eindhoven,14
-2,Hupsel,14
+2,Hupsel,15
+3,Eindhoven,14
 4,Deelen,12
 5,Herwijnen,8
+6,Eelde,7
+6,Twente,7
 6,Volkel,7
-7,De Bilt,6
-8,Arcen,5
-9,Cabauw,4
-10,Woensdrecht,3
-11,Gilze-Rijen,2
-11,Twente,2
-13,Eelde,1
-13,Maastricht,1
+9,De Bilt,6
+10,Arcen,5
+11,Cabauw,4
+12,Woensdrecht,3
+13,Gilze-Rijen,2
+13,Hoogeveen,2
+15,Heino,1
+15,Maastricht,1
