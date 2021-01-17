@@ -8,9 +8,9 @@
 6,Volkel,7
 9,De Bilt,6
 10,Arcen,5
-11,Cabauw,4
-12,Maastricht,3
-12,Woensdrecht,3
+10,Maastricht,5
+12,Cabauw,4
+13,Woensdrecht,3
 14,Gilze-Rijen,2
 14,Hoogeveen,2
 16,Heino,1
