@@ -2,10 +2,10 @@
 2,Hupsel,15
 3,Eindhoven,14
 4,Deelen,12
-5,Herwijnen,8
-6,Eelde,7
-6,Twente,7
-6,Volkel,7
+5,Eelde,9
+6,Herwijnen,8
+7,Twente,7
+7,Volkel,7
 9,De Bilt,6
 10,Arcen,5
 10,Maastricht,5

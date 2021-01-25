@@ -2,15 +2,15 @@
 2. Hupsel 1,5
 3. Eindhoven 1,4
 4. Deelen 1,2
-5. Herwijnen 0,8
-6. Eelde 0,7
-6. Twente 0,7
-6. Volkel 0,7
+5. Eelde 0,9 [color=grey][i]+0,2[/i][/color] [color=green](6)[/color]
+6. Herwijnen 0,8 [color=red](5)[/color]
+7. Twente 0,7 [color=red](6)[/color]
+7. Volkel 0,7 [color=red](6)[/color]
 9. De Bilt 0,6
 10. Arcen 0,5
-10. Maastricht 0,5 [color=grey][i]+0,2[/i][/color] [color=green](12)[/color]
-12. Cabauw 0,4 [color=red](11)[/color]
-13. Woensdrecht 0,3 [color=red](12)[/color]
+10. Maastricht 0,5
+12. Cabauw 0,4
+13. Woensdrecht 0,3
 14. Gilze-Rijen 0,2
 14. Hoogeveen 0,2
 16. Heino 0,1
