@@ -1,8 +1,8 @@
 1,Ell,24
 2,Hupsel,15
 3,Eindhoven,14
-4,Deelen,12
-5,Eelde,9
+4,Eelde,13
+5,Deelen,12
 6,Herwijnen,8
 7,Twente,7
 7,Volkel,7
