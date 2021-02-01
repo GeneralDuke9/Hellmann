@@ -3,7 +3,7 @@ from typing import Any, Iterator
 import requests
 
 stations_mapping = {
-    "210": "Valkenburg",
+    "215": "Voorschoten",
     "235": "De Kooy",
     "240": "Schiphol",
     "242": "Vlieland",
@@ -53,7 +53,7 @@ def get_data(year: str, month: str, day: str) -> Iterator[Any]:
         "eday": day,
         "variabele": "TG",
         "stations": [
-            "210",
+            "215",
             "235",
             "240",
             "242",
