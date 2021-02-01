@@ -1,23 +1,31 @@
-1,Eelde,31
-2,Ell,24
-3,Nieuw-Beerta,17
-4,Hupsel,16
-5,Deelen,14
-5,Eindhoven,14
-7,Twente,13
-8,Hoogeveen,12
-9,Leeuwarden,11
-10,Herwijnen,8
-10,Stavoren,8
-12,Volkel,7
-13,De Bilt,6
-14,Arcen,5
-14,Heino,5
-14,Maastricht,5
-14,Marknesse,5
-18,Cabauw,4
-19,Lauwersoog,3
-19,Woensdrecht,3
-21,Gilze-Rijen,2
-21,Lelystad,2
-23,Berkhout,1
+1,Eelde,60
+2,Nieuw-Beerta,45
+3,Twente,39
+4,Hupsel,36
+5,Hoogeveen,34
+6,Leeuwarden,33
+7,Heino,32
+8,Deelen,30
+9,Stavoren,28
+10,Ell,24
+11,Marknesse,22
+12,De Bilt,21
+13,Herwijnen,18
+13,Lauwersoog,18
+13,Lelystad,18
+16,Volkel,16
+17,Cabauw,15
+18,Eindhoven,14
+19,Berkhout,12
+20,Hoorn (Terschelling),11
+21,Wijk aan Zee,10
+22,Rotterdam,9
+22,Vlieland,9
+24,Schiphol,8
+24,Voorschoten,8
+26,Hoek van Holland,6
+27,Arcen,5
+27,Maastricht,5
+29,Woensdrecht,4
+30,De Kooy,2
+30,Gilze-Rijen,2
