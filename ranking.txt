@@ -1,6 +1,6 @@
 1,Eelde,76
 2,Nieuw-Beerta,67
-3,Leeuwarden,47
+3,Leeuwarden,48
 4,Hoogeveen,43
 5,Twente,39
 6,Hupsel,36
