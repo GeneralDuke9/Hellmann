@@ -1,13 +1,13 @@
 1,Eelde,76
-2,Nieuw-Beerta,67
+2,Nieuw-Beerta,69
 3,Leeuwarden,48
 4,Hoogeveen,43
 5,Twente,39
 6,Hupsel,36
 7,Stavoren,34
 8,Heino,32
-9,Deelen,30
-9,Lauwersoog,30
+9,Lauwersoog,31
+10,Deelen,30
 11,Marknesse,26
 12,Ell,24
 13,De Bilt,21

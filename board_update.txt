@@ -1,13 +1,13 @@
 1. Eelde 7,6
-2. Nieuw-Beerta 6,7
-3. Leeuwarden 4,8 [color=grey][i]+0,1[/i][/color]
+2. Nieuw-Beerta 6,9 [color=grey][i]+0,2[/i][/color]
+3. Leeuwarden 4,8
 4. Hoogeveen 4,3
 5. Twente 3,9
 6. Hupsel 3,6
 7. Stavoren 3,4
 8. Heino 3,2
-9. Deelen 3,0
-9. Lauwersoog 3,0
+9. Lauwersoog 3,1 [color=grey][i]+0,1[/i][/color]
+10. Deelen 3,0 [color=red](9)[/color]
 11. Marknesse 2,6
 12. Ell 2,4
 13. De Bilt 2,1
