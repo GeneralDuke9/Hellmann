@@ -86,6 +86,12 @@ def get_new_values() -> List[Update]:
     return new_values
 
 
+def update_summary(update: List[Update]):
+    no_stations = len(update)
+    average = sum([u.value for u in update]) / no_stations / 10.0
+    print(f"{no_stations} stations scored an average of {average} points")
+
+
 def get_input_method() -> int:
     print("Input 1 for manual input, input 2 for KNMI input:")
     input_method = input()
@@ -170,7 +176,6 @@ def get_board_update(ranking: Ranking):
                     else:
                         rank = f" [color=red]({station.rank} )[/color]"
             board_line = f"{orange}{station.new_rank}. {station.name} {score}{gain}{rank}{orange_end}"
-            print(board_line)
             datafile.write(f"{board_line}\n")
 
 
@@ -180,6 +185,7 @@ def main():
 
     ranking = read_stations()
     new_values = get_new_values()
+    update_summary(new_values)
     ranking.update_values(new_values)
     ranking.update_ranks()
     write_file(ranking)
