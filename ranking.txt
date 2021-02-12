@@ -1,34 +1,34 @@
-1,Hupsel,284
-2,Twente,270
-3,Deelen,256
-4,Volkel,248
-5,Ell,235
-6,Arcen,233
-7,Eindhoven,231
-7,Hoogeveen,231
-9,Heino,230
-10,Eelde,220
-11,Herwijnen,213
-11,Nieuw-Beerta,213
-13,Lelystad,211
-14,Maastricht,205
-15,Gilze-Rijen,201
-15,Marknesse,201
-17,De Bilt,199
-17,Woensdrecht,199
-19,Cabauw,196
-20,Leeuwarden,183
-21,Stavoren,180
-22,Rotterdam,176
-23,Berkhout,164
-23,Westdorpe,164
-25,Wijk aan Zee,161
-26,Voorschoten,160
-27,Schiphol,151
-28,Hoek van Holland,150
-29,Wilhelminadorp,142
-30,Vlissingen,126
-31,Hoorn (Terschelling),119
-32,Lauwersoog,117
-33,De Kooy,106
-34,Vlieland,104
+1,Hupsel,362
+2,Twente,336
+3,Deelen,316
+4,Volkel,309
+5,Arcen,303
+6,Ell,302
+7,Heino,293
+8,Hoogeveen,283
+9,Eindhoven,282
+10,Lelystad,272
+11,Herwijnen,265
+12,Eelde,264
+13,Woensdrecht,256
+14,Maastricht,255
+15,Gilze-Rijen,254
+15,Nieuw-Beerta,254
+17,De Bilt,247
+17,Marknesse,247
+19,Cabauw,237
+20,Rotterdam,228
+21,Leeuwarden,222
+22,Stavoren,218
+23,Voorschoten,216
+24,Wijk aan Zee,214
+25,Berkhout,207
+26,Westdorpe,205
+27,Schiphol,201
+28,Hoek van Holland,183
+29,Wilhelminadorp,172
+30,Hoorn (Terschelling),162
+31,Lauwersoog,147
+31,Vlissingen,147
+33,De Kooy,135
+33,Vlieland,135
