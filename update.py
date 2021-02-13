@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from itertools import islice
-from sys import exit, stdin
-from typing import List
+from sys import stdin
 
 from get_knmi import get_data, stations_mapping
 
@@ -35,9 +36,9 @@ class Station:
 
 
 class Ranking:
-    stations: List[Station] = []
+    stations: list[Station] = []
 
-    def update_values(self, new_values: List[Update]):
+    def update_values(self, new_values: list[Update]):
         names = [station.name for station in self.stations]
         for update in new_values:
             if update.station in names:
@@ -71,22 +72,20 @@ def read_stations() -> Ranking:
     return ranks
 
 
-def get_new_values() -> List[Update]:
+def get_new_values() -> list[Update]:
     method = get_input_method()
     if method == 1:
         new_values = prompt_update()
     elif method == 2:
         new_values = knmi_update()
     else:
-        print("Unknown entry, exit")
-        exit(1)
+        raise ValueError("Unknown entry")
     if new_values == []:
-        print("No update received, exit")
-        exit(1)
+        raise RuntimeError("No update received")
     return new_values
 
 
-def update_summary(update: List[Update]):
+def update_summary(update: list[Update]):
     no_stations = len(update)
     average = sum([u.value for u in update]) / no_stations / 10.0
     print(f"{no_stations} stations scored an average of {average} points")
@@ -97,26 +96,31 @@ def get_input_method() -> int:
     input_method = input()
     try:
         method = int(input_method)
-    except TypeError:
-        print("Unknown entry, exit")
-        exit(1)
+    except ValueError:
+        raise ValueError("Unknown entry")
     return method
 
 
-def prompt_update() -> List[Update]:
-    update: List[Update] = []
+def prompt_update() -> list[Update]:
+    update: list[Update] = []
     print("Enter update as name,value")
     print("End with Ctrl+D")
     for line in stdin:
-        (name, value) = line.split(",")
-        # Todo: verify input
-        update.append(Update(name, int(10 * float(value))))
+        try:
+            (name, value) = line.split(",")
+        except ValueError:
+            print("Enter name,value")
+        else:
+            try:
+                update.append(Update(name, int(10 * float(value))))
+            except ValueError:
+                print("'value' should be a number")
 
     return update
 
 
-def knmi_update() -> List[Update]:
-    update: List[Update] = []
+def knmi_update() -> list[Update]:
+    update: list[Update] = []
     print("Provide date (yyyymmdd)")
     date = input()
     year = str(date[:4])
@@ -135,10 +139,10 @@ def knmi_update() -> List[Update]:
     return update
 
 
-def show_update(update: List[Update]):
+def show_update(update: list[Update]):
     print("\nUpdate:")
     for entry in update:
-        valuecomma = str(float(entry.value) / 10.0).replace(".", ",")
+        valuecomma = to_comma_string(entry.value)
         print(f"{entry.station}: {valuecomma}")
 
 
@@ -148,8 +152,11 @@ def write_file(ranking: Ranking):
             datafile.write(f"{station.new_rank},{station.name},{station.score}\n")
 
 
+def to_comma_string(value: float | int) -> str:
+    return str(float(value) / 10.0).replace(".", ",")
+
+
 def get_board_update(ranking: Ranking):
-    print("\nBoard update:")
     with open("board_update.txt", "w") as datafile:
         for station in ranking.stations:
             orange = ""
@@ -157,13 +164,13 @@ def get_board_update(ranking: Ranking):
             gain = ""
             rank_change = station.rank - station.new_rank
             rank = ""
-            score = str(float(station.score) / 10.0).replace(".", ",")
+            score = to_comma_string(station.score)
             if station.rank == 0:
                 orange = "[color=orange]"
                 orange_end = "[/color]"
             else:
                 if station.gain != 0:
-                    gaincomma = str(float(station.gain) / 10.0).replace(".", ",")
+                    gaincomma = to_comma_string(station.gain)
                     gain = f" [color=grey][i]+{gaincomma}[/i][/color]"
                 if rank_change > 0:
                     if station.rank != 8:
@@ -179,18 +186,28 @@ def get_board_update(ranking: Ranking):
             datafile.write(f"{board_line}\n")
 
 
-def main():
+def main() -> int:
     ranking: Ranking
-    new_values: List[Update]
+    new_values: list[Update]
 
     ranking = read_stations()
-    new_values = get_new_values()
+    try:
+        new_values = get_new_values()
+    except RuntimeError as e:
+        print(e)
+        return 0
+    except Exception as e:
+        print(e)
+        return 1
     update_summary(new_values)
     ranking.update_values(new_values)
     ranking.update_ranks()
     write_file(ranking)
     get_board_update(ranking)
 
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    result_code = main()
+    exit(result_code)
