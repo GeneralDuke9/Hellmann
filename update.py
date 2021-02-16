@@ -80,8 +80,6 @@ def get_new_values() -> list[Update]:
         new_values = knmi_update()
     else:
         raise ValueError("Unknown entry")
-    if new_values == []:
-        raise RuntimeError("No update received")
     return new_values
 
 
@@ -193,12 +191,12 @@ def main() -> int:
     ranking = read_stations()
     try:
         new_values = get_new_values()
-    except RuntimeError as e:
-        print(e)
-        return 0
     except Exception as e:
         print(e)
         return 1
+    if len(new_values) == 0:
+        print("No update received")
+        return 0
     update_summary(new_values)
     ranking.update_values(new_values)
     ranking.update_ranks()
