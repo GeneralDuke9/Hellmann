@@ -1,6 +1,9 @@
+from itertools import islice
 from typing import Any, Iterator
 
 import requests
+
+from common import Update
 
 stations_mapping = {
     "215": "Voorschoten",
@@ -92,4 +95,22 @@ def get_data(year: str, month: str, day: str) -> Iterator[Any]:
     }
     response = requests.get(knmi_url, params=payload)
     update = response.iter_lines()
+    return update
+
+
+def knmi_update() -> list[Update]:
+    update: list[Update] = []
+    print("Provide date (yyyymmdd)")
+    date = input()
+    year = str(date[:4])
+    month = str(date[4:6])
+    day = str(date[6:])
+    raw_update = get_data(year, month, day)
+    for line in islice(raw_update, 45, None):
+        station_no, _, value = line.decode().split(",")
+        station = int(station_no)
+        increment = int(value)
+        if increment < 0:
+            update.append(Update(stations_mapping[str(station)], int(-increment)))
+
     return update

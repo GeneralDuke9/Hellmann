@@ -1,18 +1,10 @@
 from __future__ import annotations
 
-from itertools import islice
+
 from sys import stdin
 
-from get_knmi import get_data, stations_mapping
-
-
-class Update:
-    station: str
-    value: int
-
-    def __init__(self, _station: str, _value: int):
-        self.station = _station
-        self.value = _value
+from get_knmi import knmi_update
+from common import Update
 
 
 class Station:
@@ -78,6 +70,7 @@ def get_new_values() -> list[Update]:
         new_values = prompt_update()
     elif method == 2:
         new_values = knmi_update()
+        show_update(new_values)
     else:
         raise ValueError("Unknown entry")
     return new_values
@@ -113,26 +106,6 @@ def prompt_update() -> list[Update]:
                 update.append(Update(name, int(10 * float(value))))
             except ValueError:
                 print("'value' should be a number")
-
-    return update
-
-
-def knmi_update() -> list[Update]:
-    update: list[Update] = []
-    print("Provide date (yyyymmdd)")
-    date = input()
-    year = str(date[:4])
-    month = str(date[4:6])
-    day = str(date[6:])
-    raw_update = get_data(year, month, day)
-    for line in islice(raw_update, 45, None):
-        station_no, _, value = line.decode().split(",")
-        station = int(station_no)
-        increment = int(value)
-        if increment < 0:
-            update.append(Update(stations_mapping[str(station)], int(-increment)))
-
-    show_update(update)
 
     return update
 
