@@ -67,13 +67,12 @@ def read_stations() -> Ranking:
 def get_new_values() -> list[Update]:
     method = get_input_method()
     if method == 1:
-        new_values = prompt_update()
+        return prompt_update()
     elif method == 2:
         new_values = knmi_update()
         show_update(new_values)
-    else:
-        raise ValueError("Unknown entry")
-    return new_values
+        return new_values
+    raise ValueError("Unknown entry")
 
 
 def update_summary(update: list[Update]):
@@ -84,12 +83,10 @@ def update_summary(update: list[Update]):
 
 def get_input_method() -> int:
     print("Input 1 for manual input, input 2 for KNMI input:")
-    input_method = input()
     try:
-        method = int(input_method)
+        return int(input())
     except ValueError:
         raise ValueError("Unknown entry")
-    return method
 
 
 def prompt_update() -> list[Update]:
