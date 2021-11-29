@@ -1,47 +1,93 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+import datetime
 
-from sys import stdin
+import requests
 
-from get_knmi import knmi_update
-from common import Update
+STATIONS_MAPPING = {
+    215: "Voorschoten",
+    235: "De Kooy",
+    240: "Schiphol",
+    242: "Vlieland",
+    249: "Berkhout",
+    251: "Hoorn (Terschelling)",
+    257: "Wijk aan Zee",
+    260: "De Bilt",
+    267: "Stavoren",
+    269: "Lelystad",
+    270: "Leeuwarden",
+    273: "Marknesse",
+    275: "Deelen",
+    277: "Lauwersoog",
+    278: "Heino",
+    279: "Hoogeveen",
+    280: "Eelde",
+    283: "Hupsel",
+    286: "Nieuw-Beerta",
+    290: "Twente",
+    310: "Vlissingen",
+    319: "Westdorpe",
+    323: "Wilhelminadorp",
+    330: "Hoek van Holland",
+    340: "Woensdrecht",
+    344: "Rotterdam",
+    348: "Cabauw",
+    350: "Gilze-Rijen",
+    356: "Herwijnen",
+    370: "Eindhoven",
+    375: "Volkel",
+    377: "Ell",
+    380: "Maastricht",
+    391: "Arcen",
+}
 
 
+@dataclass
 class Station:
     name: str
-    rank: int
-    new_rank: int
     score: int
-    gain: int
+    rank: int = 0
+    new_rank: int = 0
+    gain: int = 0
 
-    def __init__(self, _name: str, _rank: int, _score: int):
-        self.name = _name
-        self.rank = _rank
-        self.score = _score
-        self.gain = 0
-
-    def __lt__(self, other):
+    def __lt__(self, other: Station):
         if self.score == other.score:
             return self.name > other.name
         else:
             return self.score < other.score
 
 
-class Ranking:
-    stations: list[Station] = []
+@dataclass
+class Update:
+    station_name: str
+    value: int
 
-    def update_values(self, new_values: list[Update]):
-        names = [station.name for station in self.stations]
+
+@dataclass
+class Ranking:
+    stations: list[Station] = field(default_factory=list)
+
+    def update_values_ranks_and_write_files(self, new_values: list[Update]):
+        station_by_name = {station.name: station for station in self.stations}
         for update in new_values:
-            if update.station in names:
-                idx = names.index(update.station)
-                station = self.stations[idx]
+            try:
+                station = station_by_name[update.station_name]
                 station.gain = update.value
                 station.score += station.gain
-            else:
-                self.stations.append(Station(update.station, 0, update.value))
+            except KeyError:
+                self.stations.append(Station(name=update.station_name, score=update.value))
+        self._update_ranks()
+        self._write_ranking_to_file()
+        self._write_board_update()
 
-    def update_ranks(self):
+    def _write_board_update(self):
+        with open("board_update.txt", "w") as datafile:
+            for station in self.stations:
+                board_line = build_board_line(station)
+                datafile.write(f"{board_line}\n")
+
+    def _update_ranks(self):
         self.stations.sort(reverse=True)
         for station in self.stations:
             station.new_rank = self.stations.index(station) + 1
@@ -50,132 +96,93 @@ class Ranking:
                 if station.score == higher_station.score:
                     station.new_rank = higher_station.new_rank
 
-
-def read_stations() -> Ranking:
-    ranks = Ranking()
-    try:
-        with open("ranking.txt", "r") as datafile:
-            for line in datafile:
-                (rank, name, score) = line.split(",")
-                ranks.stations.append(Station(name, int(rank), int(score)))
-    except FileNotFoundError:
-        pass
-
-    return ranks
-
-
-def get_new_values() -> list[Update]:
-    method = get_input_method()
-    if method == 1:
-        return prompt_update()
-    elif method == 2:
-        new_values = knmi_update()
-        show_update(new_values)
-        return new_values
-    raise ValueError("Unknown entry")
-
-
-def update_summary(update: list[Update]):
-    no_stations = len(update)
-    average = sum([u.value for u in update]) / no_stations / 10.0
-    print(f"{no_stations} stations scored an average of {average} points")
-
-
-def get_input_method() -> int:
-    print("Input 1 for manual input, input 2 for KNMI input:")
-    try:
-        return int(input())
-    except ValueError:
-        raise ValueError("Unknown entry")
-
-
-def prompt_update() -> list[Update]:
-    update: list[Update] = []
-    print("Enter update as name,value")
-    print("End with Ctrl+D")
-    for line in stdin:
-        try:
-            (name, value) = line.split(",")
-        except ValueError:
-            print("Enter name,value")
-        else:
-            try:
-                update.append(Update(name, int(10 * float(value))))
-            except ValueError:
-                print("'value' should be a number")
-
-    return update
-
-
-def show_update(update: list[Update]):
-    print("\nUpdate:")
-    for entry in update:
-        valuecomma = to_comma_string(entry.value)
-        print(f"{entry.station}: {valuecomma}")
-
-
-def write_file(ranking: Ranking):
-    with open("ranking.txt", "w") as datafile:
-        for station in ranking.stations:
-            datafile.write(f"{station.new_rank},{station.name},{station.score}\n")
+    def _write_ranking_to_file(self):
+        with open("ranking.txt", "w") as datafile:
+            for station in self.stations:
+                datafile.write(f"{station.new_rank},{station.name},{station.score}\n")
 
 
 def to_comma_string(value: float | int) -> str:
     return str(float(value) / 10.0).replace(".", ",")
 
 
-def get_board_update(ranking: Ranking):
-    with open("board_update.txt", "w") as datafile:
-        for station in ranking.stations:
-            orange = ""
-            orange_end = ""
-            gain = ""
-            rank_change = station.rank - station.new_rank
-            rank = ""
-            score = to_comma_string(station.score)
-            if station.rank == 0:
-                orange = "[color=orange]"
-                orange_end = "[/color]"
-            else:
-                if station.gain != 0:
-                    gaincomma = to_comma_string(station.gain)
-                    gain = f" [color=grey][i]+{gaincomma}[/i][/color]"
-                if rank_change > 0:
-                    if station.rank != 8:
-                        rank = f" [color=green]({station.rank})[/color]"
-                    else:
-                        rank = f" [color=green]({station.rank} )[/color]"
-                elif rank_change < 0:
-                    if station.rank != 8:
-                        rank = f" [color=red]({station.rank})[/color]"
-                    else:
-                        rank = f" [color=red]({station.rank} )[/color]"
-            board_line = f"{orange}{station.new_rank}. {station.name} {score}{gain}{rank}{orange_end}"
-            datafile.write(f"{board_line}\n")
+def build_board_line(station: Station) -> str:
+    gain = ""
+    rank_change = station.rank - station.new_rank
+    rank = ""
+    score = to_comma_string(station.score)
+    if station.rank == 0:
+        return f"[color=orange]{station.new_rank}. {station.name} {score}[/color]"
+    if station.gain != 0:
+        gain = f" [color=grey][i]+{to_comma_string(station.gain)}[/i][/color]"
+    if rank_change > 0:
+        if station.rank != 8:
+            rank = f" [color=green]({station.rank})[/color]"
+        else:
+            rank = f" [color=green]({station.rank} )[/color]"
+    elif rank_change < 0:
+        if station.rank != 8:
+            rank = f" [color=red]({station.rank})[/color]"
+        else:
+            rank = f" [color=red]({station.rank} )[/color]"
+    return f"{station.new_rank}. {station.name} {score}{gain}{rank}"
 
 
-def main() -> int:
-    ranking: Ranking
-    new_values: list[Update]
+def get_data(date: datetime.date) -> list[dict[str, int]]:
+    knmi_url: str = "https://daggegevens.knmi.nl/klimatologie/daggegevens"
+    datestring = datetime.date.strftime(date, "%Y%m%d")
+    payload = {
+        "start": datestring,
+        "end": datestring,
+        "fmt": "json",
+    }
+    for var in ["TG"]:
+        payload.update({f"vars[{var}]": "1"})
+    for stn in STATIONS_MAPPING.keys():
+        payload.update({f"stns[{stn}]": "1"})
+    response = requests.post(knmi_url, params=payload)
+    return response.json()
 
-    ranking = read_stations()
+
+def get_knmi_update() -> list[Update]:
+    date = datetime.date.today() - datetime.timedelta(days=1)
+    raw_update = get_data(date)
+    update = [
+        Update(STATIONS_MAPPING[station_data["station_code"]], -station_data["TG"])
+        for station_data in raw_update
+        if station_data["TG"] < 0
+    ]
+    return update
+
+
+def print_update_summary(update: list[Update]):
+    no_stations = len(update)
+    average = sum([u.value for u in update]) / no_stations / 10.0
+    print(f"{no_stations} stations scored an average of {average} points")
+
+
+def read_ranking() -> Ranking:
+    stations: list[Station] = []
     try:
-        new_values = get_new_values()
-    except Exception as e:
-        print(e)
-        return 1
-    if len(new_values) == 0:
-        print("No update received")
-        return 0
-    update_summary(new_values)
-    ranking.update_values(new_values)
-    ranking.update_ranks()
-    write_file(ranking)
-    get_board_update(ranking)
+        with open("ranking.txt", "r") as datafile:
+            for line in datafile:
+                rank, name, score = line.split(",")
+                stations.append(Station(name=name, rank=int(rank), score=int(score)))
+    except FileNotFoundError:
+        return Ranking()
 
-    return 0
+    return Ranking(stations=stations)
+
+
+def main():
+    update = get_knmi_update()
+    if len(update) == 0:
+        print("No update received")
+        return
+    print_update_summary(update)
+    ranking = read_ranking()
+    ranking.update_values_ranks_and_write_files(update)
 
 
 if __name__ == "__main__":
-    result_code = main()
-    exit(result_code)
+    main()
