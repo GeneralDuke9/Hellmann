@@ -130,7 +130,7 @@ def build_board_line(station: Station) -> str:
 
 def get_data(date: datetime.date) -> list[dict[str, int]]:
     knmi_url: str = "https://daggegevens.knmi.nl/klimatologie/daggegevens"
-    datestring = f"{date.year}{date.month}{date.day}"
+    datestring = datetime.date.strftime(date, "%Y%m%d")
     payload = {
         "start": datestring,
         "end": datestring,
@@ -144,9 +144,8 @@ def get_data(date: datetime.date) -> list[dict[str, int]]:
     return response.json()
 
 
-def get_knmi_update(date: datetime.date = None) -> list[Update]:
-    if date is None:
-        date = datetime.date.today() - datetime.timedelta(days=1)
+def get_knmi_update() -> list[Update]:
+    date = datetime.date.today() - datetime.timedelta(days=1)
     raw_update = get_data(date)
     update = [
         Update(STATIONS_MAPPING[station_data["station_code"]], -station_data["TG"])
