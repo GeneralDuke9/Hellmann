@@ -156,6 +156,12 @@ def get_knmi_update(date: datetime.date = None) -> list[Update]:
     return update
 
 
+def print_update_summary(update: list[Update]):
+    no_stations = len(update)
+    average = sum([u.value for u in update]) / no_stations / 10.0
+    print(f"{no_stations} stations scored an average of {average} points")
+
+
 def read_ranking() -> Ranking:
     stations: list[Station] = []
     try:
@@ -169,19 +175,13 @@ def read_ranking() -> Ranking:
     return Ranking(stations=stations)
 
 
-def print_update_summary(update: list[Update]):
-    no_stations = len(update)
-    average = sum([u.value for u in update]) / no_stations / 10.0
-    print(f"{no_stations} stations scored an average of {average} points")
-
-
 def main():
-    ranking = read_ranking()
     update = get_knmi_update()
     if len(update) == 0:
         print("No update received")
         return
     print_update_summary(update)
+    ranking = read_ranking()
     ranking.update_values_ranks_and_write_files(update)
 
 

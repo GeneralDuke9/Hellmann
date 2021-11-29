@@ -10,6 +10,7 @@ requests = "*"
 black = "==21.10b0"
 flake8 = "*"
 mypy = "*"
+types-requests = "*"
 
 [requires]
 python_version = "3.9"
