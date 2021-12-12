@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass, field
 import datetime
+from typing import Any
 
 import requests
 
@@ -128,31 +130,32 @@ def build_board_line(station: Station) -> str:
     return f"{station.new_rank}. {station.name} {score}{gain}{rank}"
 
 
-def get_data(date: datetime.date) -> list[dict[str, int]]:
+def get_data(date: datetime.date) -> list[dict[str, Any]]:
     knmi_url: str = "https://daggegevens.knmi.nl/klimatologie/daggegevens"
+    start_date = datetime.date.strftime(datetime.date(2020, 11, 1), "%Y%m%d")
     datestring = datetime.date.strftime(date, "%Y%m%d")
     payload = {
-        "start": datestring,
+        "start": start_date,
         "end": datestring,
         "fmt": "json",
+        "vars[TG]": "1",
     }
-    for var in ["TG"]:
-        payload.update({f"vars[{var}]": "1"})
     for stn in STATIONS_MAPPING.keys():
         payload.update({f"stns[{stn}]": "1"})
     response = requests.post(knmi_url, params=payload)
     return response.json()
 
 
-def get_knmi_update() -> list[Update]:
-    date = datetime.date.today() - datetime.timedelta(days=1)
-    raw_update = get_data(date)
-    update = [
-        Update(STATIONS_MAPPING[station_data["station_code"]], -station_data["TG"])
-        for station_data in raw_update
-        if station_data["TG"] < 0
-    ]
-    return update
+def get_knmi_update(date_to_fetch: datetime.date) -> dict[datetime.date, list[Update]]:
+    raw_update = get_data(date_to_fetch)
+    updates_by_date: dict[datetime.date, list[Update]] = defaultdict(list)
+    for station_data in raw_update:
+        if (scored_points := -station_data["TG"]) <= 0:
+            continue
+        date = datetime.datetime.strptime(station_data["date"], "%Y-%m-%dT%H:%M:%S.000Z").date()
+        update = Update(STATIONS_MAPPING[station_data["station_code"]], scored_points)
+        updates_by_date[date].append(update)
+    return updates_by_date
 
 
 def print_update_summary(update: list[Update]):
@@ -175,11 +178,14 @@ def read_ranking() -> Ranking:
 
 
 def main():
-    update = get_knmi_update()
-    if len(update) == 0:
+    date_to_fetch = datetime.date(2020, 11, 29)
+    import pdb; pdb.set_trace()
+    update = get_knmi_update(date_to_fetch)
+    today_update = update[date_to_fetch]
+    if len(today_update) == 0:
         print("No update received")
         return
-    print_update_summary(update)
+    print_update_summary(today_update)
     ranking = read_ranking()
     ranking.update_values_ranks_and_write_files(update)
 
