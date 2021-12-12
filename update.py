@@ -70,7 +70,7 @@ class Update:
 class Ranking:
     stations: list[Station] = field(default_factory=list)
 
-    def update_values_ranks_and_write_files(self, new_values: list[Update]):
+    def update_values_and_ranks(self, new_values: list[Update], reset_ranks=True):
         station_by_name = {station.name: station for station in self.stations}
         for update in new_values:
             try:
@@ -80,6 +80,11 @@ class Ranking:
             except KeyError:
                 self.stations.append(Station(name=update.station_name, score=update.value))
         self._update_ranks()
+        if reset_ranks:
+            self._reset_ranks()
+
+    def update_values_ranks_and_write_files(self, new_values: list[Update]):
+        self.update_values_and_ranks(new_values, reset_ranks=False)
         self._write_ranking_to_file()
         self._write_board_update()
 
@@ -103,9 +108,20 @@ class Ranking:
             for station in self.stations:
                 datafile.write(f"{station.new_rank},{station.name},{station.score}\n")
 
+    def _reset_ranks(self):
+        for station in self.stations:
+            station.gain = 0
+            station.rank = station.new_rank
+
 
 def to_comma_string(value: float | int) -> str:
     return str(float(value) / 10.0).replace(".", ",")
+
+
+def missing_value_string(station_data: dict[str, Any]):
+    station_name = STATIONS_MAPPING[station_data["station_code"]]
+    date = datetime.datetime.strptime(station_data["date"], "%Y-%m-%dT%H:%M:%S.000Z").date()
+    return f"WARNING: No value for {station_name} on {date}"
 
 
 def build_board_line(station: Station) -> str:
@@ -130,13 +146,13 @@ def build_board_line(station: Station) -> str:
     return f"{station.new_rank}. {station.name} {score}{gain}{rank}"
 
 
-def get_data(date: datetime.date) -> list[dict[str, Any]]:
+def get_data(start_date: datetime.date, end_date: datetime.date) -> list[dict[str, Any]]:
     knmi_url: str = "https://daggegevens.knmi.nl/klimatologie/daggegevens"
-    start_date = datetime.date.strftime(datetime.date(2020, 11, 1), "%Y%m%d")
-    datestring = datetime.date.strftime(date, "%Y%m%d")
+    start_datestring = datetime.date.strftime(start_date, "%Y%m%d")
+    end_datestring = datetime.date.strftime(end_date, "%Y%m%d")
     payload = {
-        "start": start_date,
-        "end": datestring,
+        "start": start_datestring,
+        "end": end_datestring,
         "fmt": "json",
         "vars[TG]": "1",
     }
@@ -146,10 +162,13 @@ def get_data(date: datetime.date) -> list[dict[str, Any]]:
     return response.json()
 
 
-def get_knmi_update(date_to_fetch: datetime.date) -> dict[datetime.date, list[Update]]:
-    raw_update = get_data(date_to_fetch)
+def get_knmi_update(start_date: datetime.date, date_to_fetch: datetime.date) -> dict[datetime.date, list[Update]]:
+    raw_update = get_data(start_date, date_to_fetch)
     updates_by_date: dict[datetime.date, list[Update]] = defaultdict(list)
     for station_data in raw_update:
+        if station_data["TG"] is None:
+            print(missing_value_string(station_data))
+            continue
         if (scored_points := -station_data["TG"]) <= 0:
             continue
         date = datetime.datetime.strptime(station_data["date"], "%Y-%m-%dT%H:%M:%S.000Z").date()
@@ -164,30 +183,23 @@ def print_update_summary(update: list[Update]):
     print(f"{no_stations} stations scored an average of {average} points")
 
 
-def read_ranking() -> Ranking:
-    stations: list[Station] = []
-    try:
-        with open("ranking.txt", "r") as datafile:
-            for line in datafile:
-                rank, name, score = line.split(",")
-                stations.append(Station(name=name, rank=int(rank), score=int(score)))
-    except FileNotFoundError:
-        return Ranking()
-
-    return Ranking(stations=stations)
-
-
 def main():
-    date_to_fetch = datetime.date(2020, 11, 29)
-    import pdb; pdb.set_trace()
-    update = get_knmi_update(date_to_fetch)
+    start_date = datetime.date(2021, 11, 1)
+    date_to_fetch = datetime.date.today() - datetime.timedelta(days=1)
+    update = get_knmi_update(start_date, date_to_fetch)
     today_update = update[date_to_fetch]
     if len(today_update) == 0:
         print("No update received")
         return
     print_update_summary(today_update)
-    ranking = read_ranking()
-    ranking.update_values_ranks_and_write_files(update)
+    ranking = Ranking()
+    this_date = start_date
+    while this_date != date_to_fetch:
+        this_update = update[this_date]
+        if len(this_update) > 0:
+            ranking.update_values_and_ranks(update[this_date])
+        this_date = this_date + datetime.timedelta(days=1)
+    ranking.update_values_ranks_and_write_files(today_update)
 
 
 if __name__ == "__main__":
