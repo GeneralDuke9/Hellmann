@@ -2,7 +2,7 @@ name: Send updated values
 
 on: 
   schedule: 
-    - cron:  '55 17 * * *'
+    - cron:  '58 17 * * *'
 
 jobs: 
   run:
@@ -27,6 +27,6 @@ jobs:
         source venv/bin/activate
         python covid.py
       env:
-         GMAIL_USERNAME: ${{ secrets.GMAIL_USERNAME }}
-         GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+         SENDER_USERNAME: ${{ secrets.SENDER_USERNAME }}
+         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
          RECEIVERS: ${{ secrets.RECEIVERS }}
