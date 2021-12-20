@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import datetime
+import os
+import smtplib
+import ssl
 from collections import defaultdict
 from dataclasses import dataclass, field
-import datetime
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Any
 
 import requests
@@ -114,6 +119,52 @@ class Ranking:
             station.rank = station.new_rank
 
 
+class MailSender:
+    def __init__(self, update: list[Update]):
+        self.update = update
+        SMTP_PORT = 465
+        sender_email = os.getenv("SENDER_USERNAME")
+        password = os.getenv("SENDER_PASSWORD")
+        if sender_email is None or password is None:
+            if sender_email is None:
+                print("Sender mail not set")
+            if password is None:
+                print("Password not set")
+            raise ValueError
+        self.sender_email = sender_email
+        context = ssl.create_default_context()
+        gmail_smtp = "smtp.gmail.com"
+
+        with smtplib.SMTP_SSL(gmail_smtp, SMTP_PORT, context=context) as server:
+            server.login(self.sender_email, password)
+            self._send_mail(server)
+
+    def _send_mail(self, server: smtplib.SMTP):
+        recipients_string = os.getenv("RECIPIENTS")
+        assert recipients_string is not None
+        recipients = recipients_string.split(",")
+        message = self._build_message()
+        for recipient in recipients:
+            message["To"] = recipient
+            server.sendmail(self.sender_email, recipient, message.as_string())
+
+    def _create_body(self) -> str:
+        return "\n".join(f"{item.station_name}: {item.value/10}" for item in self.update)
+
+    def _build_message(self) -> MIMEMultipart:
+        subject = f"Hellmann update {datetime.date.today() - datetime.timedelta(days=1)}"
+        body = self._create_body()
+        message_text = MIMEMultipart("alternative")
+
+        message_text.attach(MIMEText(body, "plain"))
+        message = MIMEMultipart("mixed")
+
+        message.attach(message_text)
+        message["From"] = self.sender_email
+        message["Subject"] = subject
+        return message
+
+
 def to_comma_string(value: float | int) -> str:
     return str(float(value) / 10.0).replace(".", ",")
 
@@ -200,6 +251,7 @@ def main():
             ranking.update_values_and_ranks(update[this_date])
         this_date = this_date + datetime.timedelta(days=1)
     ranking.update_values_ranks_and_write_files(today_update)
+    MailSender(today_update)
 
 
 if __name__ == "__main__":

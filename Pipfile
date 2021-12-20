@@ -9,6 +9,7 @@ requests = "*"
 [dev-packages]
 black = "==21.10b0"
 flake8 = "*"
+isort = "*"
 mypy = "*"
 types-requests = "*"
 
