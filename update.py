@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from dataclasses import dataclass, field
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import datetime
 import os
 import smtplib
 import ssl
+from collections import defaultdict
+from dataclasses import dataclass, field
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Any
 
 import requests
@@ -140,15 +140,16 @@ class MailSender:
             self._send_mail(server)
 
     def _send_mail(self, server: smtplib.SMTP):
-        recipients = os.getenv("RECIPIENTS")
-        assert recipients is not None
+        recipients_string = os.getenv("RECIPIENTS")
+        assert recipients_string is not None
+        recipients = recipients_string.split(",")
         message = self._build_message()
         for recipient in recipients:
             message["To"] = recipient
             server.sendmail(self.sender_email, recipient, message.as_string())
 
     def _create_body(self) -> str:
-        return "\n".join(f"{item.station_name}: {item.value}" for item in self.update)
+        return "\n".join(f"{item.station_name}: {item.value/10}" for item in self.update)
 
     def _build_message(self) -> MIMEMultipart:
         subject = f"Hellmann update {datetime.date.today() - datetime.timedelta(days=1)}"
