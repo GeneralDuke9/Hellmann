@@ -1,0 +1,32 @@
+name: Send updated values
+
+on: 
+  schedule: 
+    - cron:  '55 17 * * *'
+
+jobs: 
+  run:
+    runs-on: ubuntu-latest
+    container: python:3.9-slim-bullseye
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        apt-get update -y && apt-get upgrade -y --no-install-recommends
+        python -m pip install -U pip
+        pip install pipenv
+        python -m venv venv
+        source venv/bin/activate
+        pipenv install
+    - name: Run script
+      run: |
+        source venv/bin/activate
+        python covid.py
+      env:
+         GMAIL_USERNAME: ${{ secrets.GMAIL_USERNAME }}
+         GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+         RECEIVERS: ${{ secrets.RECEIVERS }}
