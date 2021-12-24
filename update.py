@@ -120,7 +120,8 @@ class Ranking:
 
 
 class MailSender:
-    def __init__(self, update: list[Update]):
+    def __init__(self, update: list[Update], ranking: Ranking):
+        self.ranking = ranking
         self.update = update
         SMTP_PORT = 465
         sender_email = os.getenv("SENDER_USERNAME")
@@ -137,23 +138,33 @@ class MailSender:
 
         with smtplib.SMTP_SSL(gmail_smtp, SMTP_PORT, context=context) as server:
             server.login(self.sender_email, password)
-            self._send_mail(server)
+            self._send_mails(server)
 
-    def _send_mail(self, server: smtplib.SMTP):
+    def _send_mails(self, server: smtplib.SMTP):
         recipients_string = os.getenv("RECIPIENTS")
-        assert recipients_string is not None
-        recipients = recipients_string.split(",")
-        message = self._build_message()
-        for recipient in recipients:
-            message["To"] = recipient
-            server.sendmail(self.sender_email, recipient, message.as_string())
+        board_recipients_string = os.getenv("BOARD_RECIPIENTS")
+        if recipients_string is not None:
+            recipients = recipients_string.split(",")
+            message = self._build_message()
+            server.sendmail(self.sender_email, recipients, message.as_string())
+        if board_recipients_string is not None:
+            board_recipients = board_recipients_string.split(",")
+            message = self._build_message(is_board_update=True)
+            server.sendmail(self.sender_email, board_recipients, message.as_string())
+
+    def _create_board_update_body(self) -> str:
+        return "\n".join(build_board_line(station) for station in self.ranking.stations)
 
     def _create_body(self) -> str:
         return "\n".join(f"{item.station_name}: {item.value/10}" for item in self.update)
 
-    def _build_message(self) -> MIMEMultipart:
-        subject = f"Hellmann update {datetime.date.today() - datetime.timedelta(days=1)}"
-        body = self._create_body()
+    def _build_message(self, is_board_update: bool = False) -> MIMEMultipart:
+        if is_board_update:
+            subject = f"Hellmann board update {datetime.date.today() - datetime.timedelta(days=1)}"
+            body = self._create_board_update_body()
+        else:
+            subject = f"Hellmann update {datetime.date.today() - datetime.timedelta(days=1)}"
+            body = self._create_body()
         message_text = MIMEMultipart("alternative")
 
         message_text.attach(MIMEText(body, "plain"))
@@ -251,7 +262,7 @@ def main():
             ranking.update_values_and_ranks(update[this_date])
         this_date = this_date + datetime.timedelta(days=1)
     ranking.update_values_ranks_and_write_files(today_update)
-    MailSender(today_update)
+    MailSender(today_update, ranking)
 
 
 if __name__ == "__main__":
