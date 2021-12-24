@@ -158,11 +158,12 @@ class MailSender:
     def _create_body(self) -> str:
         return "\n".join(f"{item.station_name}: {item.value/10}" for item in self.update)
 
-    def _build_message(self, is_board_update=True) -> MIMEMultipart:
-        subject = f"Hellmann update {datetime.date.today() - datetime.timedelta(days=1)}"
+    def _build_message(self, is_board_update: bool = False) -> MIMEMultipart:
         if is_board_update:
+            subject = f"Hellmann board update {datetime.date.today() - datetime.timedelta(days=1)}"
             body = self._create_board_update_body()
         else:
+            subject = f"Hellmann update {datetime.date.today() - datetime.timedelta(days=1)}"
             body = self._create_body()
         message_text = MIMEMultipart("alternative")
 
