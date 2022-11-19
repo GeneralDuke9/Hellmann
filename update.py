@@ -64,8 +64,12 @@ class Station:
         else:
             return self.score < other.score
 
+    def reset(self):
+        self.gain = 0
+        self.rank = self.new_rank
 
-@dataclass
+
+@dataclass(frozen=True)
 class Update:
     station_name: str
     value: int
@@ -76,14 +80,7 @@ class Ranking:
     stations: list[Station] = field(default_factory=list)
 
     def update_values_and_ranks(self, new_values: list[Update], reset_ranks=True):
-        station_by_name = {station.name: station for station in self.stations}
-        for update in new_values:
-            try:
-                station = station_by_name[update.station_name]
-                station.gain = update.value
-                station.score += station.gain
-            except KeyError:
-                self.stations.append(Station(name=update.station_name, score=update.value))
+        self._update_values(new_values)
         self._update_ranks()
         if reset_ranks:
             self._reset_ranks()
@@ -98,6 +95,16 @@ class Ranking:
             for station in self.stations:
                 board_line = build_board_line(station)
                 datafile.write(f"{board_line}\n")
+
+    def _update_values(self, new_values: list[Update]):
+        station_by_name = {station.name: station for station in self.stations}
+        for update in new_values:
+            try:
+                station = station_by_name[update.station_name]
+                station.gain = update.value
+                station.score += station.gain
+            except KeyError:
+                self.stations.append(Station(name=update.station_name, score=update.value))
 
     def _update_ranks(self):
         self.stations.sort(reverse=True)
@@ -115,29 +122,31 @@ class Ranking:
 
     def _reset_ranks(self):
         for station in self.stations:
-            station.gain = 0
-            station.rank = station.new_rank
+            station.reset()
 
 
+@dataclass
 class MailSender:
-    def __init__(self, update: list[Update], ranking: Ranking):
-        self.ranking = ranking
-        self.update = update
-        SMTP_PORT = 465
-        sender_email = os.getenv("SENDER_USERNAME")
-        password = os.getenv("SENDER_PASSWORD")
-        if sender_email is None or password is None:
-            if sender_email is None:
+    ranking: Ranking
+    update: list[Update] = field(default_factory=list)
+
+    def __post_init__(self):
+        self.smtp_port = 465
+        self.sender_email = os.getenv("SENDER_USERNAME", "")
+        self.password = os.getenv("SENDER_PASSWORD", "")
+        if self.sender_email is None or self.password is None:
+            if self.sender_email is None:
                 print("Sender mail not set")
-            if password is None:
+            if self.password is None:
                 print("Password not set")
             raise ValueError
-        self.sender_email = sender_email
+
+    def send_mails(self):
         context = ssl.create_default_context()
         gmail_smtp = "smtp.gmail.com"
 
-        with smtplib.SMTP_SSL(gmail_smtp, SMTP_PORT, context=context) as server:
-            server.login(self.sender_email, password)
+        with smtplib.SMTP_SSL(gmail_smtp, self.smtp_port, context=context) as server:
+            server.login(self.sender_email, self.password)
             self._send_mails(server)
 
     def _send_mails(self, server: smtplib.SMTP):
@@ -247,7 +256,8 @@ def print_update_summary(update: list[Update]):
 
 def main():
     start_date = datetime.date(2021, 11, 1)
-    date_to_fetch = datetime.date.today() - datetime.timedelta(days=1)
+    # date_to_fetch = datetime.date.today() - datetime.timedelta(days=1)
+    date_to_fetch = datetime.date(2022, 1, 11)
     update = get_knmi_update(start_date, date_to_fetch)
     today_update = update[date_to_fetch]
     if len(today_update) == 0:
@@ -259,10 +269,12 @@ def main():
     while this_date != date_to_fetch:
         this_update = update[this_date]
         if len(this_update) > 0:
+            print(this_date)
             ranking.update_values_and_ranks(update[this_date])
         this_date = this_date + datetime.timedelta(days=1)
     ranking.update_values_ranks_and_write_files(today_update)
-    MailSender(today_update, ranking)
+    mailer = MailSender(ranking, today_update)
+    mailer.send_mails()
 
 
 if __name__ == "__main__":
