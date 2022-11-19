@@ -255,9 +255,8 @@ def print_update_summary(update: list[Update]):
 
 
 def main():
-    start_date = datetime.date(2021, 11, 1)
-    # date_to_fetch = datetime.date.today() - datetime.timedelta(days=1)
-    date_to_fetch = datetime.date(2022, 1, 11)
+    start_date = datetime.date(2022, 11, 1)
+    date_to_fetch = datetime.date.today() - datetime.timedelta(days=1)
     update = get_knmi_update(start_date, date_to_fetch)
     today_update = update[date_to_fetch]
     if len(today_update) == 0:
@@ -269,7 +268,6 @@ def main():
     while this_date != date_to_fetch:
         this_update = update[this_date]
         if len(this_update) > 0:
-            print(this_date)
             ranking.update_values_and_ranks(update[this_date])
         this_date = this_date + datetime.timedelta(days=1)
     ranking.update_values_ranks_and_write_files(today_update)
