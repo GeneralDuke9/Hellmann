@@ -132,6 +132,7 @@ class MailSender:
 
     def __post_init__(self):
         self.smtp_port = 465
+        self.gmail_smtp = "smtp.gmail.com"
         self.sender_email = os.getenv("SENDER_USERNAME", "")
         self.password = os.getenv("SENDER_PASSWORD", "")
         if self.sender_email is None or self.password is None:
@@ -142,24 +143,23 @@ class MailSender:
             raise ValueError
 
     def send_mails(self):
-        context = ssl.create_default_context()
-        gmail_smtp = "smtp.gmail.com"
-
-        with smtplib.SMTP_SSL(gmail_smtp, self.smtp_port, context=context) as server:
-            server.login(self.sender_email, self.password)
-            self._send_mails(server)
-
-    def _send_mails(self, server: smtplib.SMTP):
         recipients_string = os.getenv("RECIPIENTS")
         board_recipients_string = os.getenv("BOARD_RECIPIENTS")
         if recipients_string is not None:
             recipients = recipients_string.split(",")
             message = self._build_message()
-            server.sendmail(self.sender_email, recipients, message.as_string())
+            self._send_mails(recipients, message)
         if board_recipients_string is not None:
             board_recipients = board_recipients_string.split(",")
             message = self._build_message(is_board_update=True)
-            server.sendmail(self.sender_email, board_recipients, message.as_string())
+            self._send_mails(board_recipients, message)
+
+    def _send_mails(self, recipients: list[str], message: MIMEMultipart):
+        context = ssl.create_default_context()
+
+        with smtplib.SMTP_SSL(self.gmail_smtp, self.smtp_port, context=context) as server:
+            server.login(self.sender_email, self.password)
+            server.sendmail(self.sender_email, recipients, message.as_string())
 
     def _create_board_update_body(self) -> str:
         return "\n".join(build_board_line(station) for station in self.ranking.stations)
@@ -245,6 +245,7 @@ def get_knmi_update(start_date: datetime.date, date_to_fetch: datetime.date) -> 
         date = datetime.datetime.strptime(station_data["date"], "%Y-%m-%dT%H:%M:%S.000Z").date()
         update = Update(STATIONS_MAPPING[station_data["station_code"]], scored_points)
         updates_by_date[date].append(update)
+    print(f"Found data for {', '.join(str(date) for date in sorted(updates_by_date.keys()))}")
     return updates_by_date
 
 
@@ -271,8 +272,9 @@ def main():
             ranking.update_values_and_ranks(update[this_date])
         this_date = this_date + datetime.timedelta(days=1)
     ranking.update_values_ranks_and_write_files(today_update)
-    mailer = MailSender(ranking, today_update)
-    mailer.send_mails()
+    if os.getenv("SEND_MAILS"):
+        mailer = MailSender(ranking, today_update)
+        mailer.send_mails()
 
 
 if __name__ == "__main__":
