@@ -29,3 +29,4 @@ jobs:
          SENDER_USERNAME: ${{ secrets.SENDER_USERNAME }}
          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
          RECIPIENTS: ${{ secrets.RECIPIENTS }}
+         SEND_MAILS: 1
