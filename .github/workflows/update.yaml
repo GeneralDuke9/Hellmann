@@ -2,7 +2,7 @@ name: Check for update and send if available
 
 on: 
   schedule: 
-    - cron:  '30 8 * * *'
+    - cron:  '15 8 * * *'
 
 jobs: 
   run:
