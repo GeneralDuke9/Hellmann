@@ -165,7 +165,9 @@ class MailSender:
         return "\n".join(build_board_line(station) for station in self.ranking.stations)
 
     def _create_body(self) -> str:
-        return "\n".join(f"{item.station_name}: {item.value/10}" for item in self.update)
+        return "\n".join(
+            f"{item.station_name}: {item.value/10}" for item in sorted(self.update, key=lambda x: x.station_name)
+        )
 
     def _build_message(self, is_board_update: bool = False) -> MIMEMultipart:
         if is_board_update:
