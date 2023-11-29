@@ -50,7 +50,7 @@ STATIONS_MAPPING = {
 }
 
 
-@dataclass
+@dataclass(slots=True)
 class Station:
     name: str
     score: int
@@ -69,13 +69,13 @@ class Station:
         self.rank = self.new_rank
 
 
-@dataclass(frozen=True)
+@dataclass(slots=True, frozen=True)
 class Update:
     station_name: str
     value: int
 
 
-@dataclass
+@dataclass(slots=True)
 class Ranking:
     stations: list[Station] = field(default_factory=list)
 
@@ -125,12 +125,16 @@ class Ranking:
             station.reset()
 
 
-@dataclass
 class MailSender:
     ranking: Ranking
-    update: list[Update] = field(default_factory=list)
+    update: list[Update]
 
-    def __post_init__(self):
+    def __init__(self, ranking: Ranking, update: list[Update] | None = None):
+        self.ranking = ranking
+        if update is not None:
+            self.update = update
+        else:
+            self.update = list()
         self.smtp_port = 465
         self.gmail_smtp = "smtp.gmail.com"
         self.sender_email = os.getenv("SENDER_USERNAME", "")
@@ -258,7 +262,7 @@ def print_update_summary(update: list[Update]):
 
 
 def main():
-    start_date = datetime.date(2022, 11, 1)
+    start_date = datetime.date(2023, 11, 1)
     date_to_fetch = datetime.date.today() - datetime.timedelta(days=1)
     update = get_knmi_update(start_date, date_to_fetch)
     today_update = update[date_to_fetch]
